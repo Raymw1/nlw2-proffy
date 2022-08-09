@@ -1,8 +1,10 @@
 import React from 'react';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { Image, Text, View } from 'react-native';
+import { CompositeNavigationProp, useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../../routes/AppStack';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { StudyTabsList } from '../../routes/StudyTabs';
 import { RectButton } from 'react-native-gesture-handler';
 
 import styles from './styles';
@@ -12,13 +14,20 @@ import studyIcon from '../../assets/images/icons/study.png';
 import giveClassesIcon from '../../assets/images/icons/give-classes.png';
 import heartIcon from '../../assets/images/icons/heart.png';
 
-type ScreenProps = StackNavigationProp<RootStackParamList, 'GiveClasses'>
+type ScreenProps = CompositeNavigationProp<
+  StackNavigationProp<RootStackParamList, 'GiveClasses'>,
+  BottomTabNavigationProp<StudyTabsList>
+>
 
 function Landing() {
   const navigation = useNavigation<ScreenProps>();
 
   function handleNavigateToGiveClassesPage() {
     navigation.navigate('GiveClasses');
+  }
+
+  function handleNavigateToStudyPage() {
+    navigation.navigate('Study');
   }
 
   return (
@@ -29,7 +38,10 @@ function Landing() {
         <Text style={styles.titleBold}>What are you searching for?</Text>
       </Text>
       <View style={styles.buttonsContainer}>
-        <RectButton style={[styles.button, styles.buttonPrimary]}>
+        <RectButton 
+          style={[styles.button, styles.buttonPrimary]}
+          onPress={handleNavigateToStudyPage}
+        >
           <Image source={studyIcon} />
           <Text style={styles.buttonText}>Study</Text>
         </RectButton>
