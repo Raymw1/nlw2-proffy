@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Image, Text, View } from 'react-native';
 import { CompositeNavigationProp, useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../../routes/AppStack';
@@ -13,6 +13,7 @@ import landingImage from '../../assets/images/landing.png';
 import studyIcon from '../../assets/images/icons/study.png';
 import giveClassesIcon from '../../assets/images/icons/give-classes.png';
 import heartIcon from '../../assets/images/icons/heart.png';
+import api from '../../services/api';
 
 type ScreenProps = CompositeNavigationProp<
   StackNavigationProp<RootStackParamList, 'GiveClasses'>,
@@ -21,6 +22,14 @@ type ScreenProps = CompositeNavigationProp<
 
 function Landing() {
   const navigation = useNavigation<ScreenProps>();
+  const [totalConnections, setTotalConnections] = useState(0);
+
+  useEffect(() => {
+    api.get('/connections').then(response => {
+      setTotalConnections(response.data.total);
+    })
+  }, []);
+ 
 
   function handleNavigateToGiveClassesPage() {
     navigation.navigate('GiveClasses');
@@ -54,7 +63,7 @@ function Landing() {
         </RectButton>
       </View>
       <Text style={styles.totalConnections}>
-        285 connections yet!! {' '}
+        {totalConnections} connections yet!! {' '}
         <Image source={heartIcon} />
       </Text>
     </View>
