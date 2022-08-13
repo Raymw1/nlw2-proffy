@@ -1,19 +1,34 @@
 import React, { useState } from 'react';
-import { ScrollView, Text, TextInput, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import PageHeader from '../../components/PageHeader';
 import TeacherItem from '../../components/TeacherItem';
 import { Picker } from '@react-native-picker/picker';
 import RNDateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { BorderlessButton, RectButton } from 'react-native-gesture-handler';
 import { Feather } from '@expo/vector-icons';
+import api from '../../services/api';
 
 import styles from './styles';
+
+export interface Teacher {
+  avatar: string;
+  bio: string;
+  cost: number;
+  id: number;
+  name: string;
+  subject: string;
+  user_id: number;
+  whatsapp: string;
+};
 
 function TeacherList() {
   const [isFiltersVisible, setIsFiltersVisible] = useState(false);
   const [showPickerTime, setShowPickerTime] = useState(false);
-  const [schedule, setSchedule] = useState('Schedule');
   const [time, setTime] = useState(new Date());
+  const [subject, setSubject] = useState('');
+  const [weekDay, setWeekDay] = useState('');
+  const [schedule, setSchedule] = useState('Schedule');
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
 
   function getTime(event: DateTimePickerEvent, selectedTime: Date | undefined) {
     const time = new Date(selectedTime as Date);
@@ -23,6 +38,20 @@ function TeacherList() {
     minutes = String(minutes).length < 2 ? '0' + minutes : minutes;
     const formattedTime = `${time.getHours()}:${minutes}`;
     setSchedule(formattedTime);
+  }
+
+  async function handleFiltersSubmit() {
+    if (!subject || !weekDay || !schedule) return;
+    const {data} = await api.get('/classes', 
+      { 
+        params: { 
+          subject, 
+          week_day: weekDay, 
+          time: schedule
+        }, 
+      });
+    setTeachers(data);
+    setIsFiltersVisible(false);
   }
 
   return (
@@ -42,8 +71,8 @@ function TeacherList() {
           <View style={styles.searchForm}>
             <Text style={styles.label}>Subject</Text>
             <Picker
-              selectedValue=''
-              onValueChange={() => {}}
+              selectedValue={subject}
+              onValueChange={(value) => setSubject(value)}
               style={styles.input}
             >
               <Picker.Item label='Choose a subject' value='' enabled={false} />
@@ -62,8 +91,8 @@ function TeacherList() {
               <View style={styles.inputBlock}>
                 <Text style={styles.label}>Week day</Text>
                 <Picker
-                  selectedValue=''
-                  onValueChange={() => {}}
+                  selectedValue={weekDay}
+                  onValueChange={value => setWeekDay(value)}
                   style={styles.input}
                   placeholder='Week day'
                 >
@@ -88,7 +117,7 @@ function TeacherList() {
                 </RectButton>
               </View>
             </View>
-            <RectButton style={styles.submitButton}>
+            <RectButton style={styles.submitButton} onPress={handleFiltersSubmit}>
               <Text style={styles.submitButtonText}>Search</Text>
             </RectButton>
           </View>
@@ -101,10 +130,9 @@ function TeacherList() {
           paddingBottom: 16,
         }}
       >
-        <TeacherItem />
-        <TeacherItem />
-        <TeacherItem />
-        <TeacherItem />
+        {teachers.map((teacher: Teacher) => (
+          <TeacherItem key={teacher.id} teacher={teacher} />
+        ))}
       </ScrollView>
     </View>
   );
