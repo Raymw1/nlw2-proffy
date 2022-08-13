@@ -8,6 +8,7 @@ import unfavoriteIcon from '../../assets/images/icons/unfavorite.png';
 import whatsappIcon from '../../assets/images/icons/whatsapp.png';
 import { Teacher } from '../../pages/TeacherList';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import api from '../../services/api';
 
 interface TeacherItemProps {
   teacher: Teacher;
@@ -18,6 +19,7 @@ const TeacherItem: React.FC<TeacherItemProps> = ({ teacher, favorited }) => {
   const [isFavorited, setIsFavorited] = useState(favorited);
 
   function handleLinkToWhatsapp() {
+    api.post('connections', { user_id: teacher.id });
     Linking.openURL(`whatsapp://send?phone=${teacher.whatsapp}`);
   }
 
