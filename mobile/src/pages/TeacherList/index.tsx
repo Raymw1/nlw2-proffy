@@ -7,6 +7,7 @@ import RNDateTimePicker, { DateTimePickerEvent } from '@react-native-community/d
 import { BorderlessButton, RectButton } from 'react-native-gesture-handler';
 import { Feather } from '@expo/vector-icons';
 import api from '../../services/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import styles from './styles';
 
@@ -29,6 +30,16 @@ function TeacherList() {
   const [weekDay, setWeekDay] = useState('');
   const [schedule, setSchedule] = useState('Schedule');
   const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [favorites, setFavorites] = useState<number[]>([]);
+
+  function loadFavorites() {
+    AsyncStorage.getItem('favorites').then(response => {
+      if (response) {
+        const favoritedTeachers = JSON.parse(response);
+        setFavorites(favoritedTeachers.map((teacher: Teacher) => teacher.id));
+      }
+    })
+  }
 
   function getTime(event: DateTimePickerEvent, selectedTime: Date | undefined) {
     const time = new Date(selectedTime as Date);
@@ -42,6 +53,7 @@ function TeacherList() {
 
   async function handleFiltersSubmit() {
     if (!subject || !weekDay || !schedule) return;
+    loadFavorites();
     const {data} = await api.get('/classes', 
       { 
         params: { 
@@ -131,7 +143,11 @@ function TeacherList() {
         }}
       >
         {teachers.map((teacher: Teacher) => (
-          <TeacherItem key={teacher.id} teacher={teacher} />
+          <TeacherItem
+            key={teacher.id}
+            teacher={teacher}
+            favorited={favorites.includes(teacher.id)}
+          />
         ))}
       </ScrollView>
     </View>
